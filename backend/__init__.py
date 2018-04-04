@@ -11,16 +11,19 @@ logger.setLevel(logging.WARN)
 
 # create console handler and set level to debug
 ch = logging.StreamHandler()
-ch.setLevel(logging.WARN)
-
+ch.setLevel(logging.INFO)
+fh = logging.FileHandler('diginetbot.log')
+fh.setLevel(logging.WARN)
 # create formatter
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # add formatter to ch
 ch.setFormatter(formatter)
+fh.setFormatter(formatter)
 
 # add ch to logger
 logger.addHandler(ch)
+logger.addHandler(fh)
 
 diginet = ccxt.acx({'apiKey': settings.diginet_key, 'secret': settings.diginet_secret,
                     'urls': {'extension': '.json', 'api': 'https://trade.diginet.io'}})
