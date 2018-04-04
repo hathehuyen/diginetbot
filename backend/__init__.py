@@ -57,18 +57,18 @@ def compare_prices(bitstamp_orderbook, diginet_oderbook):
 
 
 def run():
-    diginet_orderbook = diginet.fetch_order_book('BTC/VND')
-    bitstamp_orderbook = bitstamp.fetch_order_book('BTC/USD')
-    compare_prices(bitstamp_orderbook, diginet_orderbook)
-
-
-if __name__ == '__main__':
     while True:
         try:
-            run()
+            diginet_orderbook = diginet.fetch_order_book('BTC/VND')
+            bitstamp_orderbook = bitstamp.fetch_order_book('BTC/USD')
+            compare_prices(bitstamp_orderbook, diginet_orderbook)
         except Exception as ex:
             logging.error(ex)
         time.sleep(settings.interval)
+
+
+if __name__ == '__main__':
+    run()
 
 # b_market = bitstamp.load_markets()
 # d_market = diginet.load_markets()
