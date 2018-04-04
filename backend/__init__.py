@@ -7,11 +7,11 @@ import time
 logging.Formatter.converter = time.gmtime
 # create logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARN)
 
 # create console handler and set level to debug
 ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.WARN)
 
 # create formatter
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -44,16 +44,26 @@ def compare_prices(bitstamp_orderbook, diginet_oderbook):
     diginet_sell_price, diginet_sell_quantity = get_sell_price_and_quantity(diginet_oderbook)
     logger.info('Bitstamp sell price ' + str(bitstamp_sell_price * settings.usd_vnd_rate) +
                 ' - Diginet buy price ' + str(diginet_sell_price) +
-                ' - Diff: ' + str((bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price) +
+                ' - Diff: ' +
+                str((bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price * 100) +
                 '%')
     logger.info('Diginet sell price ' + str(diginet_sell_price) +
                 ' - Bitstamp buy price ' + str(bitstamp_buy_price * settings.usd_vnd_rate) +
-                ' - Diff: ' + str((diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price) +
+                ' - Diff: ' +
+                str((diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price * 100) +
                 '%')
     if (bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price > settings.diff_pct:
-        logger.warning('Buy on diginet -> sell on bitstamp')
+        logger.warning('Buy on diginet ' + str(diginet_buy_price) +
+                       ' -> sell on bitstamp ' + str(bitstamp_sell_price * settings.usd_vnd_rate) +
+                       ' - Diff: ' +
+                       str((bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price * 100)
+                       + '%')
     if (diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price > settings.diff_pct:
-        logger.warning('Buy on bitstamp -> sell on diginet')
+        logger.warning('Buy on bitstamp ' + str(bitstamp_buy_price * settings.usd_vnd_rate) +
+                       ' -> sell on diginet ' + str(diginet_sell_price) +
+                       ' - Diff: ' +
+                       str((diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price * 100)
+                       + '%')
 
 
 def run():
