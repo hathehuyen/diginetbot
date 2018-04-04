@@ -11,3 +11,5 @@ currency_max_pct = 0.7
 asset_max_pct = 0.7
 bitstamp_oderbook_pct = 0.3
 bitstamp_min_order = 5
+diff_pct = 0.01
+interval = 5
