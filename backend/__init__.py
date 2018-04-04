@@ -1,14 +1,16 @@
+import logging
 import ccxt
 import settings
-import logging
 import time
+import sys
+import os
 
 
 class BackEnd(object):
     def __init__(self, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.diginet = ccxt.acx({'apiKey': settings.diginet_key, 'secret': settings.diginet_secret,
-                            'urls': {'extension': '.json', 'api': 'https://trade.diginet.io'}})
+                                 'urls': {'extension': '.json', 'api': 'https://trade.diginet.io'}})
         self.bitstamp = ccxt.bitstamp({'apiKey': settings.bitstamp_key, 'secret': settings.bitstamp_secret})
 
     def get_buy_price_and_quantity(self, orderbook):
@@ -25,29 +27,33 @@ class BackEnd(object):
         diginet_buy_price, diginet_buy_quantity = self.get_buy_price_and_quantity(diginet_oderbook)
         diginet_sell_price, diginet_sell_quantity = self.get_sell_price_and_quantity(diginet_oderbook)
         self.logger.info('Bitstamp sell price ' + str(bitstamp_sell_price * settings.usd_vnd_rate) +
-                    ' - Diginet buy price ' + str(diginet_sell_price) +
-                    ' - Diff: ' +
-                    str((bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price * 100) +
-                    '%')
+                         ' - Diginet buy price ' + str(diginet_sell_price) +
+                         ' - Diff: ' +
+                         str((
+                                         bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price * 100) +
+                         '%')
         self.logger.info('Diginet sell price ' + str(diginet_sell_price) +
-                    ' - Bitstamp buy price ' + str(bitstamp_buy_price * settings.usd_vnd_rate) +
-                    ' - Diff: ' +
-                    str((diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price * 100) +
-                    '%')
+                         ' - Bitstamp buy price ' + str(bitstamp_buy_price * settings.usd_vnd_rate) +
+                         ' - Diff: ' +
+                         str((
+                                         diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price * 100) +
+                         '%')
         if (bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price > settings.diff_pct:
             self.logger.warning('Buy on diginet ' + str(diginet_buy_price) +
-                           ' -> sell on bitstamp ' + str(bitstamp_sell_price * settings.usd_vnd_rate) +
-                           ' - Diff: ' +
-                           str((bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price * 100)
-                           + '%')
+                                ' -> sell on bitstamp ' + str(bitstamp_sell_price * settings.usd_vnd_rate) +
+                                ' - Diff: ' +
+                                str((
+                                                bitstamp_sell_price * settings.usd_vnd_rate - diginet_buy_price) / diginet_buy_price * 100)
+                                + '%')
         if (diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price > settings.diff_pct:
             self.logger.warning('Buy on bitstamp ' + str(bitstamp_buy_price * settings.usd_vnd_rate) +
-                           ' -> sell on diginet ' + str(diginet_sell_price) +
-                           ' - Diff: ' +
-                           str((diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price * 100)
-                           + '%')
+                                ' -> sell on diginet ' + str(diginet_sell_price) +
+                                ' - Diff: ' +
+                                str((
+                                                diginet_sell_price / settings.usd_vnd_rate - bitstamp_buy_price) / bitstamp_buy_price * 100)
+                                + '%')
 
-    def run(self):
+    def run_loop(self):
         while True:
             try:
                 diginet_orderbook = self.diginet.fetch_order_book('BTC/VND')
@@ -59,5 +65,4 @@ class BackEnd(object):
 
 
 if __name__ == '__main__':
-    BackEnd.run()
-
+    BackEnd.run_loop()

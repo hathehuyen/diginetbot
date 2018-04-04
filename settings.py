@@ -13,3 +13,4 @@ bitstamp_oderbook_pct = 0.3
 bitstamp_min_order = 5
 diff_pct = 0.01
 interval = 5
+setting_files = ['settings.py']
