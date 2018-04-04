@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import logging
 import backend
 import threading
@@ -40,7 +41,8 @@ def check_file_change():
 
 def restart():
     logger.info("Restarting bot...")
-    os.execl(sys.executable, sys.executable)
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
 
 
 def run():
@@ -52,8 +54,8 @@ def run():
 
     logger.info('Bot started, running.')
     while True:
-        time.sleep(10)
         check_file_change()
+        time.sleep(10)
 
 
 if __name__ == '__main__':
