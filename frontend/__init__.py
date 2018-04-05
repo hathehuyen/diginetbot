@@ -1,5 +1,7 @@
-from flask import Flask, render_template, flash, request
-from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
+from flask import Flask, render_template, flash, request, Response
+# from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
+from flask_wtf import Form
+
 
 # App config.
 DEBUG = True
@@ -8,26 +10,12 @@ app.config.from_object(__name__)
 app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
 
 
-class ReusableForm(Form):
-    name = StringField('Name:', validators=[validators.required()])
+@app.route("/log", methods=['GET', 'POST'])
+def log():
+    with open('diginetbot.log') as f:
+        logs = f.read()
+    return Response(logs, mimetype='text/plain')
 
-
-@app.route("/", methods=['GET', 'POST'])
-def hello():
-    form = ReusableForm(request.form)
-
-    print(form.errors)
-    if request.method == 'POST':
-        name = request.form['name']
-        print(name)
-
-        if form.validate():
-            # Save the comment here.
-            flash('Hello ' + name)
-        else:
-            flash('All the form fields are required. ')
-
-    return render_template('settings.html', form=form, d_api_key = 'abc123')
 
 
 if __name__ == "__main__":

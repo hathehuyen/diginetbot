@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 import backend
+import frontend
 import threading
 import settings
 import time
@@ -47,11 +48,16 @@ def restart():
 
 def run():
     logger.info('Bot starting...')
+    # Start backend
     backend_prog = backend.BackEnd(logger=logger)
     backend_thread = threading.Thread(target=lambda: backend_prog.run_loop())
     backend_thread.daemon = True
     backend_thread.start()
-
+    # Start front end
+    frontend_prog = frontend.app
+    frontend_thread = threading.Thread(target=lambda: frontend_prog.run(debug=True, use_reloader=False))
+    frontend_thread.daemon = True
+    frontend_thread.start()
     logger.info('Bot started, running.')
     while True:
         check_file_change()
