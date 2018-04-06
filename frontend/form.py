@@ -23,4 +23,4 @@ class SettingForm(FlaskForm):
     bitstamp_min_order = StringField('Bitstamp min order')
     diff_pct = StringField('Difference percent')
     interval = StringField('Interval')
-
+    submit = SubmitField('Save')

@@ -1,3 +1,4 @@
+configparser
 ccxt
 flask
 Flask-WTF

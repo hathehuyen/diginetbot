@@ -5,8 +5,64 @@
     <form action="" method="post">
         {{ form.hidden_tag() }}
         <p>
-            {{ form.username.label }}
-            {{ form.username(size=32) }}<br>
+            {{ form.diginet_key.label }}
+            {{ form.diginet_key(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.diginet_secret.label }}
+            {{ form.diginet_secret(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.bitstamp_key.label }}
+            {{ form.bitstamp_key(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.bitstamp_secret.label }}
+            {{ form.bitstamp_secret(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.usd_vnd_rate.label }}
+            {{ form.usd_vnd_rate(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.btc_vnd_max.label }}
+            {{ form.btc_vnd_max(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.vnd_btc_max.label }}
+            {{ form.vnd_btc_max(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.eth_vnd_max.label }}
+            {{ form.eth_vnd_max(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.vnd_eth_max.label }}
+            {{ form.vnd_eth_max(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.currency_max_pct.label }}
+            {{ form.currency_max_pct(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.asset_max_pct.label }}
+            {{ form.asset_max_pct(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.bitstamp_oderbook_pct.label }}
+            {{ form.bitstamp_oderbook_pct(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.bitstamp_min_order.label }}
+            {{ form.bitstamp_min_order(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.diff_pct.label }}
+            {{ form.diff_pct(size=32) }}<br>
+        </p>
+        <p>
+            {{ form.interval.label }}
+            {{ form.interval(size=32) }}<br>
         </p>
         <p>{{ form.submit() }}</p>
     </form>
