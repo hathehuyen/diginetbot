@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 import logging
+import configparser
 import backend
 import frontend
 import threading
 import settings
+import json
 import time
 import sys
 import os
 
-watched_files = [os.path.abspath(f) for f in settings.setting_files]
+config = configparser.ConfigParser()
+config.read('config.ini')
+watched_files = [os.path.abspath(f) for f in config['system']['setting_files'].split()]
 watched_files_mtimes = [(f, os.path.getmtime(f)) for f in watched_files]
 # set logging time to GMT
 logging.Formatter.converter = time.gmtime
@@ -49,10 +53,10 @@ def restart():
 def run():
     logger.info('Bot starting...')
     # Start backend
-    # backend_prog = backend.BackEnd(logger=logger)
-    # backend_thread = threading.Thread(target=lambda: backend_prog.run_loop())
-    # backend_thread.daemon = True
-    # backend_thread.start()
+    backend_prog = backend.BackEnd(logger=logger)
+    backend_thread = threading.Thread(target=lambda: backend_prog.run_loop())
+    backend_thread.daemon = True
+    backend_thread.start()
     # Start front end
     frontend_prog = frontend.app
     frontend_thread = threading.Thread(target=lambda: frontend_prog.run(host='0.0.0.0', debug=True, use_reloader=False))
