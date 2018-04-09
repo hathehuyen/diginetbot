@@ -31,21 +31,29 @@ def settings():
     username = request.values['user']
     user_obj = db.UserObj()
     user_obj.find_one(username)
-    # user exist
-    if user_obj.id:
-        session_obj = db.SessionObj()
-        session_obj.find_one()
-        # create session if not exist
-        if not session_obj.id:
-            session_obj.user_id = user_obj.id
-            session_obj.save()
+    # create user if not exist
+    if not user_obj.id:
+        user_obj.username = username
+        user_obj.password = '123456'
+        user_obj.save()
+    session_obj = db.SessionObj()
+    session_obj.find_one(user_id=user_obj.id)
+    # create session if not exist
+    if not session_obj.id:
+        session_obj.user_id = user_obj.id
+        bot_params = configparser.ConfigParser()
+        bot_params.read('config.ini')
+        session_obj.settings = bot_params
+        session_obj.save()
+    # return Response(str(session_obj.settings), content_type='text/plain')
+
     # create form
     setting_form = SettingForm()
     # create config object
-    bot_params = configparser.ConfigParser()
+    bot_params = session_obj.settings
     if setting_form.validate_on_submit():
         # load config file
-        bot_params.read('config.ini')
+        # bot_params.read('config.ini')
         # modify config params
         bot_params['bot']['diginet_key'] = setting_form.diginet_key.data
         bot_params['bot']['diginet_secret'] = setting_form.diginet_secret.data
@@ -63,13 +71,15 @@ def settings():
         bot_params['bot']['diff_pct'] = setting_form.diff_pct.data
         bot_params['bot']['interval'] = setting_form.interval.data
         # save config file
-        with open('config.ini', 'w') as configfile:
-            bot_params.write(configfile)
-        flash('Your changes have been saved.')
-        return redirect(url_for('settings'))
+        # with open('config.ini', 'w') as configfile:
+        #     bot_params.write(configfile)
+        # flash('Your changes have been saved.')
+        # return redirect(url_for('settings'))
+        # save config to db
+        session_obj.settings = bot_params
+        session_obj.save()
+        return redirect(request.full_path)
     elif request.method == 'GET':
-        # load config file
-        bot_params.read('config.ini')
         setting_form.diginet_key.data = bot_params['bot']['diginet_key']
         setting_form.diginet_secret.data = bot_params['bot']['diginet_secret']
         setting_form.bitstamp_key.data = bot_params['bot']['bitstamp_key']

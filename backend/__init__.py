@@ -3,6 +3,8 @@ import ccxt
 # import settings
 import time
 import configparser
+import threading
+from common import db
 import sys
 import os
 
