@@ -2,3 +2,4 @@ configparser
 ccxt
 flask
 Flask-WTF
+pymongo

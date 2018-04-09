@@ -7,6 +7,12 @@ class LogForm(FlaskForm):
     log = TextAreaField('Log')
 
 
+class LogInForm(FlaskForm):
+    username = TextAreaField('User name', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Log In')
+
+
 class SettingForm(FlaskForm):
     diginet_key = StringField('Diginet key')
     diginet_secret = StringField('Diginet secret')
