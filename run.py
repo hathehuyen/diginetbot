@@ -53,10 +53,10 @@ def restart():
 def run():
     logger.info('Bot starting...')
     # Start backend
-    backend_prog = backend.BackEnd(logger=logger)
-    backend_thread = threading.Thread(target=lambda: backend_prog.run_loop())
-    backend_thread.daemon = True
-    backend_thread.start()
+    # backend_prog = backend.BackEnd(logger=logger)
+    # backend_thread = threading.Thread(target=lambda: backend_prog.run_loop())
+    # backend_thread.daemon = True
+    # backend_thread.start()
     # Start front end
     frontend_prog = frontend.app
     frontend_thread = threading.Thread(target=lambda: frontend_prog.run(host='0.0.0.0', debug=True, use_reloader=False))

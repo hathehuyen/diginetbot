@@ -41,20 +41,30 @@ class SessionObj(object):
         self.status = None
         self.settings = None
 
-    def find_one(self, session_id: str):
-        session = sessions_db.find_one({'_id': objectid.ObjectId(session_id)})
-        if session:
-            self.id = session['_id']
-            self.user_id = session['user_id']
-            self.status = session['status']
-            self.settings = session['settings']
+    def find_one(self, session_id: str=None, user_id: str=None):
+        if session_id:
+            session = sessions_db.find_one({'_id': objectid.ObjectId(session_id)})
+            if session:
+                self.id = session['_id']
+                self.user_id = session['user_id']
+                self.status = session['status']
+                self.settings = session['settings']
+        elif user_id:
+            session = sessions_db.find_one({'user_id': objectid.ObjectId(user_id)})
+            if session:
+                self.id = session['_id']
+                self.user_id = session['user_id']
+                self.status = session['status']
+                self.settings = session['settings']
 
     def save(self):
-        if self.id:
-            result = sessions_db.update_one({'_id': self.id, 'status': self.status, 'settings': self.settings})
-            return result.acknowledged
+        result = sessions_db.update_one({'_id': self.id},
+                                        {'$set': {'status': self.status, 'settings': self.settings}})
+        if not self.id:
+            self.id = result.inserted_id
+            return self.id
         else:
-            return False
+            return self.id
 
 
 class LogObj(object):

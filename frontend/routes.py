@@ -1,4 +1,5 @@
 from frontend import app
+from common import db
 from flask import Flask, render_template, flash, request, Response, redirect, url_for
 # from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 from flask_wtf import Form
@@ -14,6 +15,8 @@ def index():
 
 @app.route("/log", methods=['GET'])
 def log():
+    if 'user' not in request.values:
+        return Response('Access denied!', content_type='text/plain')
     log_form = LogForm()
     with open('diginetbot.log') as f:
         logs = f.read()
@@ -23,6 +26,19 @@ def log():
 
 @app.route("/settings", methods=['GET', 'POST'])
 def settings():
+    if 'user' not in request.values:
+        return Response('Access denied!', content_type='text/plain')
+    username = request.values['user']
+    user_obj = db.UserObj()
+    user_obj.find_one(username)
+    # user exist
+    if user_obj.id:
+        session_obj = db.SessionObj()
+        session_obj.find_one()
+        # create session if not exist
+        if not session_obj.id:
+            session_obj.user_id = user_obj.id
+            session_obj.save()
     # create form
     setting_form = SettingForm()
     # create config object
