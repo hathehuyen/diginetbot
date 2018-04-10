@@ -29,4 +29,5 @@ if not session_obj.id:
 om = ordermanager.OrderManager(bitstamp_orderbook=bitstamp_orderbook_btcusd, diginet_orderbook=diginet_orderbook_btcvnd,
                                session=session_obj)
 time.sleep(3)
-om.fetch_balance()
+om.run_thread()
+time.sleep(60)

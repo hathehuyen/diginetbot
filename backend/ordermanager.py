@@ -1,4 +1,5 @@
 import ccxt
+import time
 import threading
 from common.model import OrderBook
 from common.db import SessionObj
@@ -56,24 +57,53 @@ class OrderManager(object):
     def generate_diginet_orders(self, bitstamp_asks, bitstamp_bids):
         bid_orders = []
         ask_orders = []
+        diginet_vnd_free = float(self.diginet_exchanger.balance['VND']['free']) * \
+                           float(self.settings['diginet']['currency_max_pct'])
+        diginet_btc_free = float(self.diginet_exchanger.balance['BTC']['free']) * \
+                           float(self.settings['diginet']['asset_max_pct'])
+        bitstamp_usd_free = float(self.bitstamp_exchanger.balance['USD']['free']) * \
+                            float(self.settings['bitstamp']['currency_max_pct'])
+        bitstamp_btc_free = float(self.bitstamp_exchanger.balance['BTC']['free']) * \
+                            float(self.settings['bitstamp']['asset_max_pct'])
         for i in range(0, int(self.settings['bitstamp']['order_to_copy']) - 1):
+            # check balance
+            if bitstamp_btc_free <= 0 or diginet_vnd_free <= 0:
+                break
             # Generate bid orders from asks
-            price = bitstamp_asks[i][0] * int(self.settings['diginet']['usd_vnd_rate']) + \
-                    (bitstamp_asks[i][0] * int(self.settings['diginet']['usd_vnd_rate']) *
-                     int(self.settings['bitstamp']['diff_pct']))
-            volume: float = 0
-            if bitstamp_asks[i][1] < self.settings['bitstamp']['']:
-                volume = bitstamp_asks[i][1] * self.settings['bitstamp']['order_pct']
+            # Buy from diginet, sell on bitstamp
+            price = bitstamp_asks[i][0] * float(self.settings['diginet']['usd_vnd_rate']) + \
+                    (bitstamp_asks[i][0] * float(self.settings['diginet']['usd_vnd_rate']) *
+                     float(self.settings['bitstamp']['diff_pct']))
+            if bitstamp_asks[i][1] < float(self.settings['bitstamp']['btc_vnd_max']):
+                volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['order_pct'])
+            else:
+                volume = float(self.settings['bitstamp']['btc_vnd_max'])
+            if volume > bitstamp_btc_free:
+                volume = bitstamp_btc_free
+            if volume * price > diginet_vnd_free:
+                volume = diginet_vnd_free / price
             bid_orders.append([price, volume])
+            bitstamp_btc_free -= volume
+            diginet_vnd_free -= volume * price
 
+        for i in range(0, int(self.settings['bitstamp']['order_to_copy']) - 1):
+            # Check balance
+            if bitstamp_usd_free <= 0 or diginet_btc_free <= 0:
+                break
             # Generate ask orders from bids
-            price = bitstamp_bids[i][0] * int(self.settings['diginet']['usd_vnd_rate']) - \
-                    (bitstamp_bids[i][0] * int(self.settings['diginet']['usd_vnd_rate']) *
-                     int(self.settings['bitstamp']['diff_pct']))
-            volume: float = 0
-            if bitstamp_asks[i][1] < self.settings['bitstamp']['']:
-                volume = bitstamp_asks[i][1] * self.settings['bitstamp']['order_pct']
+            # Buy from bitstamp, sell on diginet
+            price = bitstamp_bids[i][0] * float(self.settings['diginet']['usd_vnd_rate']) - \
+                    (bitstamp_bids[i][0] * float(self.settings['diginet']['usd_vnd_rate']) *
+                     float(self.settings['bitstamp']['diff_pct']))
+            volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['order_pct'])
+            if volume > bitstamp_usd_free * bitstamp_bids[i][0]:
+                volume = bitstamp_usd_free * bitstamp_bids[i][0]
+            if volume > diginet_btc_free:
+                volume = diginet_btc_free
             bid_orders.append([price, volume])
+            diginet_btc_free -= volume
+            bitstamp_usd_free -= volume * bitstamp_bids[i][0]
+
         return ask_orders, bid_orders
 
     def place_diginet_orders(self, ask_orders, bid_orders):
@@ -82,10 +112,15 @@ class OrderManager(object):
         for bid_order in bid_orders:
             self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[0], bid_order[1])
 
-    def run(self):
-        self.fetch_balance()
-        ask_orders, bid_orders = self.generate_diginet_orders()
-        self.place_diginet_orders(ask_orders, bid_orders)
+    def run_loop(self):
+        while self.signal:
+            try:
+                self.fetch_balance()
+                ask_orders, bid_orders = self.generate_diginet_orders(self.bitstamp_orderbook.asks, self.bitstamp_orderbook.asks)
+                self.place_diginet_orders(ask_orders, bid_orders)
+            except Exception as ex:
+                print(ex)
+            time.sleep(int(self.settings['bot']['interval']))
 
     class OMThread(threading.Thread):
         def __init__(self, threadNum, asset, window):
@@ -98,3 +133,8 @@ class OrderManager(object):
         def run(self):
             while self.signal:
                 self.start()
+
+    def run_thread(self):
+        thread = threading.Thread(target=lambda: self.run_loop())
+        thread.daemon = True
+        thread.start()
