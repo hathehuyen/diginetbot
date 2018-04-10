@@ -21,7 +21,7 @@ def index():
 
 @app.route("/test", methods=['GET'])
 def test():
-    return Response(bitstamp_orderbook_btcusd.bids, content_type='text/plain')
+    return Response(str(bitstamp_orderbook_btcusd.bids), content_type='text/plain')
 
 
 @app.route("/log", methods=['GET'])
