@@ -6,11 +6,22 @@ from flask_wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from frontend.form import LogForm, SettingForm
 import configparser
+from common.model import OrderBook
+
+bitstamp_orderbook_btcusd = OrderBook(exchange='bitstamp', pair='BTC/USD')
+bitstamp_orderbook_btcusd.start()
+diginet_orderbook_btcusd = OrderBook(exchange='diginet', pair='BTC/USD')
+diginet_orderbook_btcusd.start()
 
 
 @app.route("/", methods=['GET'])
 def index():
     return render_template('index.html', title='Home')
+
+
+@app.route("/test", methods=['GET'])
+def test():
+    return Response(bitstamp_orderbook_btcusd.bids, content_type='text/plain')
 
 
 @app.route("/log", methods=['GET'])
