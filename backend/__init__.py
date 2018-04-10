@@ -4,7 +4,7 @@ import ccxt
 import time
 import configparser
 import threading
-from common import db
+from common import db, model
 import sys
 import os
 
