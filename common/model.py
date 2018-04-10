@@ -33,7 +33,7 @@ class OrderBook(object):
         while True:
             try:
                 orderbook = self.source.fetch_order_book(self.pair)
-                self.asks = orderbook['ask']
+                self.asks = orderbook['asks']
                 self.bids = orderbook['bids']
                 self.last_update = time.time()
             except Exception as ex:
