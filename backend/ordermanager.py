@@ -108,9 +108,9 @@ class OrderManager(object):
 
     def place_diginet_orders(self, ask_orders, bid_orders):
         for ask_order in ask_orders:
-            self.diginet_exchanger.create_order('BTC/VND', 'limit', 'buy', ask_order[0], ask_order[1])
+            self.diginet_exchanger.create_order('BTC/VND', 'limit', 'buy', ask_order[1], ask_order[0])
         for bid_order in bid_orders:
-            self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[0], bid_order[1])
+            self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[1], bid_order[0])
 
     def run_loop(self):
         while self.signal:
