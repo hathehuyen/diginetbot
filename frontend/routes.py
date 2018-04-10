@@ -10,8 +10,8 @@ from common.model import OrderBook
 
 bitstamp_orderbook_btcusd = OrderBook(exchange='bitstamp', pair='BTC/USD')
 bitstamp_orderbook_btcusd.start()
-diginet_orderbook_btcusd = OrderBook(exchange='diginet', pair='BTC/USD')
-diginet_orderbook_btcusd.start()
+diginet_orderbook_btcvnd = OrderBook(exchange='diginet', pair='BTC/VND')
+diginet_orderbook_btcvnd.start()
 
 
 @app.route("/", methods=['GET'])
