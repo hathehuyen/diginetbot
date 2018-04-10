@@ -87,4 +87,3 @@ class LogObj(object):
 
     def get_logs(self, session_id):
         return logs_db.find({'session_id': session_id})
-
