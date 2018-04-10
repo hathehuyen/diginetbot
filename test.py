@@ -4,7 +4,7 @@ from backend import ordermanager
 import configparser
 import time
 
-logging.getLogger(__name__).setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 bitstamp_orderbook_btcusd = model.OrderBook(exchange='bitstamp', pair='BTC/USD')
 bitstamp_orderbook_btcusd.start()
