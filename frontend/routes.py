@@ -76,7 +76,8 @@ def settings():
         bot_params['bitstamp']['key'] = setting_form.bitstamp_key.data
         bot_params['bitstamp']['secret'] = setting_form.bitstamp_secret.data
         bot_params['bitstamp']['uid'] = setting_form.bitstamp_uid.data
-        bot_params['bitstamp']['orderbook_pct'] = setting_form.bitstamp_oderbook_pct.data
+        bot_params['bitstamp']['orderbook_pct'] = setting_form.bitstamp_orderbook_pct.data
+        bot_params['bitstamp']['order_to_copy'] = setting_form.bitstamp_order_to_copy.data
         bot_params['bitstamp']['min_order'] = setting_form.bitstamp_min_order.data
         bot_params['bitstamp']['diff_pct'] = setting_form.bitstamp_diff_pct.data
         bot_params['diginet']['key'] = setting_form.diginet_key.data
@@ -88,6 +89,7 @@ def settings():
         bot_params['diginet']['vnd_eth_max'] = setting_form.diginet_vnd_eth_max.data
         bot_params['diginet']['currency_max_pct'] = setting_form.diginet_currency_max_pct.data
         bot_params['diginet']['asset_max_pct'] = setting_form.diginet_asset_max_pct.data
+        bot_params['diginet']['min_order'] = setting_form.diginet_min_order.data
         bot_params['bot']['interval'] = setting_form.bot_interval.data
 
         session_obj.settings = bot_params
@@ -108,8 +110,9 @@ def settings():
         setting_form.bitstamp_key.data = bot_params['bitstamp']['key']
         setting_form.bitstamp_secret.data = bot_params['bitstamp']['secret']
         setting_form.bitstamp_uid.data = bot_params['bitstamp']['uid']
-        setting_form.bitstamp_oderbook_pct.data = bot_params['bitstamp']['orderbook_pct']
+        setting_form.bitstamp_orderbook_pct.data = bot_params['bitstamp']['orderbook_pct']
         setting_form.bitstamp_min_order.data = bot_params['bitstamp']['min_order']
+        setting_form.bitstamp_order_to_copy.data = bot_params['bitstamp']['order_to_copy']
         setting_form.bitstamp_diff_pct.data = bot_params['bitstamp']['diff_pct']
         setting_form.diginet_key.data = bot_params['diginet']['key']
         setting_form.diginet_secret.data = bot_params['diginet']['secret']
@@ -120,6 +123,7 @@ def settings():
         setting_form.diginet_vnd_eth_max.data = bot_params['diginet']['vnd_eth_max']
         setting_form.diginet_currency_max_pct.data = bot_params['diginet']['currency_max_pct']
         setting_form.diginet_asset_max_pct.data = bot_params['diginet']['asset_max_pct']
+        setting_form.diginet_min_order.data = bot_params['diginet']['min_order']
         setting_form.bot_interval.data = bot_params['bot']['interval']
     return render_template('settings.html', title='Settings', form=setting_form)
 

@@ -66,17 +66,16 @@ class OrderManager(object):
         self.logger.info('Bitstamp balance (btc/usd): ' + str(bitstamp_btc_free) + '/' + str(bitstamp_usd_free))
         for i in range(0, int(self.settings['bitstamp']['order_to_copy']) - 1):
             # check balance
-            if bitstamp_btc_free <= 0 or diginet_vnd_free <= 0:
+            if bitstamp_btc_free <= float(self.settings['bitstamp']['min_order']) \
+                    or diginet_vnd_free <= float(self.settings['diginet']['min_order']):
                 break
-            # Generate bid orders from asks
             # Buy from diginet, sell on bitstamp
             price = bitstamp_asks[i][0] * float(self.settings['diginet']['usd_vnd_rate']) + \
                     (bitstamp_asks[i][0] * float(self.settings['diginet']['usd_vnd_rate']) *
                      float(self.settings['bitstamp']['diff_pct']))
-            if bitstamp_asks[i][1] < float(self.settings['bitstamp']['btc_vnd_max']):
-                volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['orderbook_pct'])
-            else:
-                volume = float(self.settings['bitstamp']['btc_vnd_max'])
+            volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['orderbook_pct'])
+            if volume * price > float(self.settings['diginet']['vnd_btc_max']):
+                volume = float(self.settings['diginet']['vnd_btc_max']) / price
             if volume > bitstamp_btc_free:
                 volume = bitstamp_btc_free
             if volume * price > diginet_vnd_free:
@@ -84,28 +83,29 @@ class OrderManager(object):
             self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
             if not (bitstamp_asks[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
-                bid_orders.append([price, volume])
+                ask_orders.append([price, volume])
                 bitstamp_btc_free -= volume
                 diginet_vnd_free -= volume * price
 
         for i in range(0, int(self.settings['bitstamp']['order_to_copy']) - 1):
             # Check balance
-            if bitstamp_usd_free <= 0 or diginet_btc_free <= 0:
+            if bitstamp_btc_free <= float(self.settings['bitstamp']['min_order']) \
+                    or diginet_vnd_free <= float(self.settings['diginet']['min_order']):
                 break
-            # Generate ask orders from bids
+            # Generate bids orders from bids
             # Buy from bitstamp, sell on diginet
             price = bitstamp_bids[i][0] * float(self.settings['diginet']['usd_vnd_rate']) - \
                     (bitstamp_bids[i][0] * float(self.settings['diginet']['usd_vnd_rate']) *
                      float(self.settings['bitstamp']['diff_pct']))
             volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['orderbook_pct'])
-            if volume > bitstamp_usd_free * bitstamp_bids[i][0]:
-                volume = bitstamp_usd_free * bitstamp_bids[i][0]
+            if volume > bitstamp_usd_free / bitstamp_bids[i][0]:
+                volume = bitstamp_usd_free / bitstamp_bids[i][0]
             if volume > diginet_btc_free:
                 volume = diginet_btc_free
             self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
             if not (bitstamp_bids[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
-                ask_orders.append([price, volume])
+                bid_orders.append([price, volume])
                 diginet_btc_free -= volume
                 bitstamp_usd_free -= volume * bitstamp_bids[i][0]
 
