@@ -67,6 +67,8 @@ class OrderManager(object):
                             float(self.settings['bitstamp']['currency_max_pct'])
         bitstamp_btc_free = float(self.bitstamp_exchanger.balance['BTC']['free']) * \
                             float(self.settings['bitstamp']['asset_max_pct'])
+        self.logger.info('Diginet balance (btc/vnd): ' + str(diginet_btc_free) + '/' + str(diginet_vnd_free))
+        self.logger.info('Bitstamp balance (btc/usd): ' + str(bitstamp_btc_free) + '/' + str(bitstamp_usd_free))
         for i in range(0, int(self.settings['bitstamp']['order_to_copy']) - 1):
             # check balance
             if bitstamp_btc_free <= 0 or diginet_vnd_free <= 0:
