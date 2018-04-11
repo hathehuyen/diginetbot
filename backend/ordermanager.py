@@ -1,3 +1,4 @@
+import logging
 import ccxt
 import time
 import threading
@@ -24,6 +25,7 @@ class diginet(ccxt.acx):
 class OrderManager(object):
     def __init__(self, bitstamp_orderbook: OrderBook, diginet_orderbook: OrderBook, session: SessionObj):
         self.signal = True
+        self.logger = logging.getLogger(__name__)
         self.bitstamp_orderbook = bitstamp_orderbook
         self.diginet_orderbook = diginet_orderbook
         self.exchanges = []
@@ -119,8 +121,13 @@ class OrderManager(object):
     def run_loop(self):
         while self.signal:
             try:
+                self.logger.info('Update balance')
                 self.fetch_balance()
+                self.logger.info('Generate orders from bitstamp order book')
                 ask_orders, bid_orders = self.generate_diginet_orders(self.bitstamp_orderbook.asks, self.bitstamp_orderbook.asks)
+                self.logger.info(str(ask_orders))
+                self.logger.info(str(bid_orders))
+                self.logger.info('Place diginet order')
                 self.place_diginet_orders(ask_orders, bid_orders)
             except Exception as ex:
                 print(ex)
