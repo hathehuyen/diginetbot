@@ -88,7 +88,7 @@ class OrderManager(object):
                 volume = bitstamp_btc_free
             if volume * price > diginet_vnd_free:
                 volume = diginet_vnd_free / price
-            self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
+            # self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
             if not (bitstamp_asks[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
                 ask_orders.append([price, volume])
@@ -109,7 +109,7 @@ class OrderManager(object):
                 volume = bitstamp_usd_free / bitstamp_bids[i][0]
             if volume > diginet_btc_free:
                 volume = diginet_btc_free
-            self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
+            # self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
             if not (bitstamp_bids[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
                 bid_orders.append([price, volume])
@@ -167,6 +167,10 @@ class OrderManager(object):
                             self.diginet_exchanger.cancel_order(order['id'])
                         if order['status'] == 'closed':
                             self.logger.info('Order ' + order['id'] + ' filled, place market order on bitstamp')
+                            if order['side'] == 'sell':
+                                self.bitstamp_exchanger.create_market_buy_order('BTC/USD', order['filled'])
+                            if order['side'] == 'buy':
+                                self.bitstamp_exchanger.create_market_sell_order('BTC/USD', order['filled'])
                 else:
                     self.logger.info('No active orders')
             except Exception as ex:
