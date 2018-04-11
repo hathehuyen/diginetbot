@@ -19,9 +19,16 @@ def index():
     return render_template('index.html', title='Home')
 
 
-@app.route("/test", methods=['GET'])
-def test():
-    return Response(str(bitstamp_orderbook_btcusd.bids), content_type='text/plain')
+@app.route("/orderbook", methods=['GET'])
+def orderbook():
+    if 'ex' not in request.values:
+        return Response('Access denied!', content_type='text/plain')
+    if request.values['ex'] == 'bitstamp':
+        return Response(str(bitstamp_orderbook_btcusd.bids), content_type='text/plain')
+    if request.values['ex'] == 'diginet':
+        return Response(str(diginet_orderbook_btcvnd.bids), content_type='text/plain')
+    return Response('No exchange!', content_type='text/plain')
+
 
 
 @app.route("/log", methods=['GET'])
@@ -63,9 +70,6 @@ def settings():
     # create config object
     bot_params = session_obj.settings
     if setting_form.validate_on_submit():
-        # load config file
-        # bot_params.read('config.ini')
-        # modify config params
         bot_params['bot']['diginet_key'] = setting_form.diginet_key.data
         bot_params['bot']['diginet_secret'] = setting_form.diginet_secret.data
         bot_params['bot']['bitstamp_key'] = setting_form.bitstamp_key.data
@@ -91,20 +95,21 @@ def settings():
         session_obj.save()
         return redirect(request.full_path)
     elif request.method == 'GET':
-        setting_form.diginet_key.data = bot_params['bot']['diginet_key']
-        setting_form.diginet_secret.data = bot_params['bot']['diginet_secret']
-        setting_form.bitstamp_key.data = bot_params['bot']['bitstamp_key']
-        setting_form.bitstamp_secret.data = bot_params['bot']['bitstamp_secret']
-        setting_form.usd_vnd_rate.data = bot_params['bot']['usd_vnd_rate']
-        setting_form.btc_vnd_max.data = bot_params['bot']['btc_vnd_max']
-        setting_form.vnd_btc_max.data = bot_params['bot']['vnd_btc_max']
-        setting_form.eth_vnd_max.data = bot_params['bot']['eth_vnd_max']
-        setting_form.vnd_eth_max.data = bot_params['bot']['vnd_eth_max']
-        setting_form.currency_max_pct.data = bot_params['bot']['currency_max_pct']
-        setting_form.asset_max_pct.data = bot_params['bot']['asset_max_pct']
-        setting_form.bitstamp_oderbook_pct.data = bot_params['bot']['bitstamp_oderbook_pct']
-        setting_form.bitstamp_min_order.data = bot_params['bot']['bitstamp_min_order']
-        setting_form.diff_pct.data = bot_params['bot']['diff_pct']
+        setting_form.bitstamp_key.data = bot_params['bitstamp']['key']
+        setting_form.bitstamp_secret.data = bot_params['bitstamp']['secret']
+        setting_form.bitstamp_uid.data = bot_params['bitstamp']['uid']
+        setting_form.bitstamp_oderbook_pct.data = bot_params['bitstamp']['orderbook_pct']
+        setting_form.bitstamp_min_order.data = bot_params['bitstamp']['bitstamp_min_order']
+        setting_form.bitstamp_diff_pct.data = bot_params['bitstamp']['diff_pct']
+        setting_form.diginet_key.data = bot_params['diginet']['key']
+        setting_form.diginet_secret.data = bot_params['diginet']['secret']
+        setting_form.diginet_usd_vnd_rate.data = bot_params['diginet']['usd_vnd_rate']
+        setting_form.diginet_btc_vnd_max.data = bot_params['diginet']['btc_vnd_max']
+        setting_form.diginet_vnd_btc_max.data = bot_params['diginet']['vnd_btc_max']
+        setting_form.diginet_eth_vnd_max.data = bot_params['diginet']['eth_vnd_max']
+        setting_form.diginet_vnd_eth_max.data = bot_params['diginet']['vnd_eth_max']
+        setting_form.diginet_currency_max_pct.data = bot_params['diginet']['currency_max_pct']
+        setting_form.diginet_asset_max_pct.data = bot_params['diginet']['asset_max_pct']
         setting_form.interval.data = bot_params['bot']['interval']
     return render_template('settings.html', title='Settings', form=setting_form)
 
