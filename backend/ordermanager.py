@@ -7,19 +7,14 @@ from common.db import SessionObj
 
 
 class diginet(ccxt.acx):
-    def create_order(self, symbol, type, side, amount, price=None, params={}):
+    def get_order(self, id, symbol=None, params={}):
         self.load_markets()
-        order = {
-            'market': self.market_id(symbol),
-            'side': side,
-            'volume': str(amount),
-            'ord_type': type,
-        }
-        if type == 'limit':
-            order['price'] = str(price)
-        response = self.privatePostOrders(self.extend(order, params))
-        market = self.markets_by_id[response['market']]
-        return self.parse_order(response, market)
+        result = self.privateGetOrder({'id': id})
+        order = self.parse_order(result)
+        # status = order['status']
+        # if status == 'closed' or status == 'canceled':
+        #     raise OrderNotFound(self.id + ' ' + self.json(order))
+        return order
 
 
 class OrderManager(object):
@@ -34,7 +29,7 @@ class OrderManager(object):
         self.bitstamp_exchanger = ccxt.bitstamp({'apiKey': self.settings['bitstamp']['key'],
                                                  'secret': self.settings['bitstamp']['secret'],
                                                  'uid': self.settings['bitstamp']['uid']})
-        self.diginet_exchanger = ccxt.acx({'apiKey': self.settings['diginet']['key'],
+        self.diginet_exchanger = diginet({'apiKey': self.settings['diginet']['key'],
                                            'secret': self.settings['diginet']['secret'],
                                            'urls': {'extension': '.json', 'api': 'https://trade.diginet.io'}})
 
@@ -114,28 +109,57 @@ class OrderManager(object):
 
         return ask_orders, bid_orders
 
+    def test_diginet_orders(self):
+        self.logger.info('Test diginet order')
+        # order = self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', 0.0001, 200000000)
+        # self.logger.info(str(order))
+        # time.sleep(10)
+        # self.logger.info('Cancel order')
+        # status = self.diginet_exchanger.cancel_order(order['id'], order['symbol'])
+        status = self.diginet_exchanger.get_order('25809098', 'BTC/VND')
+        self.logger.info(str(status))
+
     def place_diginet_orders(self, ask_orders, bid_orders):
+        orders = []
         for ask_order in ask_orders:
             self.logger.info('Buy ' + str(ask_order[1]) + '@' + str(ask_order[1]))
-            # self.diginet_exchanger.create_order('BTC/VND', 'limit', 'buy', ask_order[1], ask_order[0])
+            order = self.diginet_exchanger.create_order('BTC/VND', 'limit', 'buy', ask_order[1], ask_order[0])
+            orders.append(order)
         for bid_order in bid_orders:
             self.logger.info('Buy ' + str(bid_order[1]) + '@' + str(bid_order[1]))
-            # self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[1], bid_order[0])
+            order = self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[1], bid_order[0])
+            orders.append(order)
+        return orders
 
     def run_loop(self):
         while self.signal:
+            orders = []
             try:
                 self.logger.info('Update balance')
                 self.fetch_balance()
                 self.logger.info('Generate orders from bitstamp order book')
                 ask_orders, bid_orders = self.generate_diginet_orders(self.bitstamp_orderbook.asks, self.bitstamp_orderbook.bids)
-                # self.logger.info(str(ask_orders))
-                # self.logger.info(str(bid_orders))
                 self.logger.info('Place diginet order')
-                self.place_diginet_orders(ask_orders, bid_orders)
+                orders = self.place_diginet_orders(ask_orders, bid_orders)
+                # self.test_diginet_orders()
             except Exception as ex:
-                print(ex)
+                self.logger.error(str(ex))
             time.sleep(int(self.settings['bot']['interval']))
+            try:
+                if orders:
+                    self.logger.info('Check orders status')
+                    for order in orders:
+                        order = self.diginet_exchanger.get_order(order['id'])
+                        self.logger.info(str(order))
+                        if order['status'] == 'open':
+                            self.logger.info('Close order id ' + order['id'])
+                            self.diginet_exchanger.cancel_order(order['id'])
+                        if order['status'] == 'closed':
+                            self.logger.info('Order ' + order['id'] + ' filled, place market order on bitstamp')
+                else:
+                    self.logger.info('No active orders')
+            except Exception as ex:
+                self.logger.error(str(ex))
 
     class OMThread(threading.Thread):
         def __init__(self, threadNum, asset, window):
