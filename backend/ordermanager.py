@@ -16,6 +16,15 @@ class diginet(ccxt.acx):
         #     raise OrderNotFound(self.id + ' ' + self.json(order))
         return order
 
+    def cancel_all_order(self, symbol=None, params={}):
+        self.load_markets()
+        result = self.privatePostOrdersClear()
+        # order = self.parse_order(result)
+        # status = order['status']
+        # if status == 'closed' or status == 'canceled':
+        #     raise OrderNotFound(self.id + ' ' + self.json(order))
+        return result
+
 
 class OrderManager(object):
     def __init__(self, bitstamp_orderbook: OrderBook, diginet_orderbook: OrderBook, session: SessionObj):
@@ -66,8 +75,7 @@ class OrderManager(object):
         self.logger.info('Bitstamp balance (btc/usd): ' + str(bitstamp_btc_free) + '/' + str(bitstamp_usd_free))
         for i in range(0, int(self.settings['bitstamp']['order_to_copy']) - 1):
             # check balance
-            if bitstamp_usd_free <= float(self.settings['bitstamp']['min_order']) \
-                    or diginet_vnd_free <= float(self.settings['diginet']['min_order']):
+            if diginet_vnd_free <= float(self.settings['diginet']['min_order']):
                 break
             # Buy from diginet, sell on bitstamp
             price = bitstamp_asks[i][0] * float(self.settings['diginet']['usd_vnd_rate']) - \
@@ -89,8 +97,7 @@ class OrderManager(object):
 
         for i in range(0, int(self.settings['bitstamp']['order_to_copy']) - 1):
             # Check balance
-            if bitstamp_usd_free <= float(self.settings['bitstamp']['min_order']) \
-                    or diginet_vnd_free <= float(self.settings['diginet']['min_order']):
+            if bitstamp_usd_free <= float(self.settings['bitstamp']['min_order']):
                 break
             # Generate bids orders from bids
             # Buy from bitstamp, sell on diginet
@@ -134,6 +141,8 @@ class OrderManager(object):
         return orders
 
     def run_loop(self):
+        self.logger.info('Cancel all diginet orders')
+        self.diginet_exchanger.cancel_all_order()
         while self.signal:
             orders = []
             try:
