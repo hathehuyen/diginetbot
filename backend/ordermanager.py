@@ -106,10 +106,9 @@ class OrderManager(object):
                 volume = bitstamp_usd_free * bitstamp_bids[i][0]
             if volume > diginet_btc_free:
                 volume = diginet_btc_free
-            self.logger.info('')
             if not (bitstamp_bids[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
-                bid_orders.append([price, volume])
+                ask_orders.append([price, volume])
                 diginet_btc_free -= volume
                 bitstamp_usd_free -= volume * bitstamp_bids[i][0]
 
@@ -117,9 +116,11 @@ class OrderManager(object):
 
     def place_diginet_orders(self, ask_orders, bid_orders):
         for ask_order in ask_orders:
-            self.diginet_exchanger.create_order('BTC/VND', 'limit', 'buy', ask_order[1], ask_order[0])
+            self.logger.info('Buy ' + str(ask_order[1]) + '@' + str(ask_order[1]))
+            # self.diginet_exchanger.create_order('BTC/VND', 'limit', 'buy', ask_order[1], ask_order[0])
         for bid_order in bid_orders:
-            self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[1], bid_order[0])
+            self.logger.info('Buy ' + str(bid_order[1]) + '@' + str(bid_order[1]))
+            # self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[1], bid_order[0])
 
     def run_loop(self):
         while self.signal:
@@ -127,9 +128,9 @@ class OrderManager(object):
                 self.logger.info('Update balance')
                 self.fetch_balance()
                 self.logger.info('Generate orders from bitstamp order book')
-                ask_orders, bid_orders = self.generate_diginet_orders(self.bitstamp_orderbook.asks, self.bitstamp_orderbook.asks)
-                self.logger.info(str(ask_orders))
-                self.logger.info(str(bid_orders))
+                ask_orders, bid_orders = self.generate_diginet_orders(self.bitstamp_orderbook.asks, self.bitstamp_orderbook.bids)
+                # self.logger.info(str(ask_orders))
+                # self.logger.info(str(bid_orders))
                 self.logger.info('Place diginet order')
                 self.place_diginet_orders(ask_orders, bid_orders)
             except Exception as ex:
