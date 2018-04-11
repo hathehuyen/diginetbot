@@ -74,14 +74,14 @@ class OrderManager(object):
                     (bitstamp_asks[i][0] * float(self.settings['diginet']['usd_vnd_rate']) *
                      float(self.settings['bitstamp']['diff_pct']))
             if bitstamp_asks[i][1] < float(self.settings['bitstamp']['btc_vnd_max']):
-                volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['order_pct'])
+                volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['orderbook_pct'])
             else:
                 volume = float(self.settings['bitstamp']['btc_vnd_max'])
             if volume > bitstamp_btc_free:
                 volume = bitstamp_btc_free
             if volume * price > diginet_vnd_free:
                 volume = diginet_vnd_free / price
-            self.logger.debug('Price ' + str(price) + ' - Volume ' + str(volume))
+            self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
             if not (bitstamp_asks[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
                 bid_orders.append([price, volume])
@@ -97,12 +97,12 @@ class OrderManager(object):
             price = bitstamp_bids[i][0] * float(self.settings['diginet']['usd_vnd_rate']) - \
                     (bitstamp_bids[i][0] * float(self.settings['diginet']['usd_vnd_rate']) *
                      float(self.settings['bitstamp']['diff_pct']))
-            volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['order_pct'])
+            volume = bitstamp_asks[i][1] * float(self.settings['bitstamp']['orderbook_pct'])
             if volume > bitstamp_usd_free * bitstamp_bids[i][0]:
                 volume = bitstamp_usd_free * bitstamp_bids[i][0]
             if volume > diginet_btc_free:
                 volume = diginet_btc_free
-            self.logger.debug('Price ' + str(price) + ' - Volume ' + str(volume))
+            self.logger.info('Price ' + str(price) + ' - Volume ' + str(volume))
             if not (bitstamp_bids[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
                 ask_orders.append([price, volume])

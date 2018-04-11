@@ -1,5 +1,7 @@
 from frontend import app
 from common import db
+import time
+from backend import ordermanager
 from flask import Flask, render_template, flash, request, Response, redirect, url_for
 # from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 from flask_wtf import Form
@@ -12,7 +14,7 @@ bitstamp_orderbook_btcusd = OrderBook(exchange='bitstamp', pair='BTC/USD')
 bitstamp_orderbook_btcusd.start()
 diginet_orderbook_btcvnd = OrderBook(exchange='diginet', pair='BTC/VND')
 diginet_orderbook_btcvnd.start()
-
+om = None
 
 @app.route("/", methods=['GET'])
 def index():
@@ -46,6 +48,7 @@ def log():
 def settings():
     if 'user' not in request.values:
         return Response('Access denied!', content_type='text/plain')
+    global om
     username = request.values['user']
     user_obj = db.UserObj()
     user_obj.find_one(username)
@@ -70,36 +73,43 @@ def settings():
     # create config object
     bot_params = session_obj.settings
     if setting_form.validate_on_submit():
-        bot_params['bot']['diginet_key'] = setting_form.diginet_key.data
-        bot_params['bot']['diginet_secret'] = setting_form.diginet_secret.data
-        bot_params['bot']['bitstamp_key'] = setting_form.bitstamp_key.data
-        bot_params['bot']['bitstamp_secret'] = setting_form.bitstamp_secret.data
-        bot_params['bot']['usd_vnd_rate'] = setting_form.usd_vnd_rate.data
-        bot_params['bot']['btc_vnd_max'] = setting_form.btc_vnd_max.data
-        bot_params['bot']['vnd_btc_max'] = setting_form.vnd_btc_max.data
-        bot_params['bot']['eth_vnd_max'] = setting_form.eth_vnd_max.data
-        bot_params['bot']['vnd_eth_max'] = setting_form.vnd_eth_max.data
-        bot_params['bot']['currency_max_pct'] = setting_form.currency_max_pct.data
-        bot_params['bot']['asset_max_pct'] = setting_form.asset_max_pct.data
-        bot_params['bot']['bitstamp_oderbook_pct'] = setting_form.bitstamp_oderbook_pct.data
-        bot_params['bot']['bitstamp_min_order'] = setting_form.bitstamp_min_order.data
-        bot_params['bot']['diff_pct'] = setting_form.diff_pct.data
-        bot_params['bot']['interval'] = setting_form.interval.data
-        # save config file
-        # with open('config.ini', 'w') as configfile:
-        #     bot_params.write(configfile)
-        # flash('Your changes have been saved.')
-        # return redirect(url_for('settings'))
-        # save config to db
+        bot_params['bitstamp']['key'] = setting_form.bitstamp_key.data
+        bot_params['bitstamp']['secret'] = setting_form.bitstamp_secret.data
+        bot_params['bitstamp']['uid'] = setting_form.bitstamp_uid.data
+        bot_params['bitstamp']['orderbook_pct'] = setting_form.bitstamp_oderbook_pct.data
+        bot_params['bitstamp']['min_order'] = setting_form.bitstamp_min_order.data
+        bot_params['bitstamp']['diff_pct'] = setting_form.bitstamp_diff_pct.data
+        bot_params['diginet']['key'] = setting_form.diginet_key.data
+        bot_params['diginet']['secret'] = setting_form.diginet_secret.data
+        bot_params['diginet']['usd_vnd_rate'] = setting_form.diginet_usd_vnd_rate.data
+        bot_params['diginet']['btc_vnd_max'] = setting_form.diginet_btc_vnd_max.data
+        bot_params['diginet']['vnd_btc_max'] = setting_form.diginet_vnd_btc_max.data
+        bot_params['diginet']['eth_vnd_max'] = setting_form.diginet_eth_vnd_max.data
+        bot_params['diginet']['vnd_eth_max'] = setting_form.diginet_vnd_eth_max.data
+        bot_params['diginet']['currency_max_pct'] = setting_form.diginet_currency_max_pct.data
+        bot_params['diginet']['asset_max_pct'] = setting_form.diginet_asset_max_pct.data
+        bot_params['bot']['interval'] = setting_form.bot_interval.data
+
         session_obj.settings = bot_params
         session_obj.save()
+        if not om:
+            om = ordermanager.OrderManager(bitstamp_orderbook=bitstamp_orderbook_btcusd,
+                                           diginet_orderbook=diginet_orderbook_btcvnd,
+                                           session=session_obj)
+        else:
+            om.signal = False
+            time.sleep(2)
+            om = ordermanager.OrderManager(bitstamp_orderbook=bitstamp_orderbook_btcusd,
+                                           diginet_orderbook=diginet_orderbook_btcvnd,
+                                           session=session_obj)
+        om.run_thread()
         return redirect(request.full_path)
     elif request.method == 'GET':
         setting_form.bitstamp_key.data = bot_params['bitstamp']['key']
         setting_form.bitstamp_secret.data = bot_params['bitstamp']['secret']
         setting_form.bitstamp_uid.data = bot_params['bitstamp']['uid']
         setting_form.bitstamp_oderbook_pct.data = bot_params['bitstamp']['orderbook_pct']
-        setting_form.bitstamp_min_order.data = bot_params['bitstamp']['bitstamp_min_order']
+        setting_form.bitstamp_min_order.data = bot_params['bitstamp']['min_order']
         setting_form.bitstamp_diff_pct.data = bot_params['bitstamp']['diff_pct']
         setting_form.diginet_key.data = bot_params['diginet']['key']
         setting_form.diginet_secret.data = bot_params['diginet']['secret']
@@ -110,7 +120,7 @@ def settings():
         setting_form.diginet_vnd_eth_max.data = bot_params['diginet']['vnd_eth_max']
         setting_form.diginet_currency_max_pct.data = bot_params['diginet']['currency_max_pct']
         setting_form.diginet_asset_max_pct.data = bot_params['diginet']['asset_max_pct']
-        setting_form.interval.data = bot_params['bot']['interval']
+        setting_form.bot_interval.data = bot_params['bot']['interval']
     return render_template('settings.html', title='Settings', form=setting_form)
 
 

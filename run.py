@@ -10,7 +10,7 @@ import frontend
 # import sys
 # import os
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 # config = configparser.ConfigParser()
 # config.read('config.ini')
 # watched_files = [os.path.abspath(f) for f in config['system']['setting_files'].split()]
