@@ -104,6 +104,7 @@ class OrderManager(object):
                 volume = bitstamp_usd_free * bitstamp_bids[i][0]
             if volume > diginet_btc_free:
                 volume = diginet_btc_free
+            self.logger.info('')
             if not (bitstamp_bids[i][0] * volume < float(self.settings['bitstamp']['min_order']) or
                     price * volume < float(self.settings['diginet']['min_order'])):
                 bid_orders.append([price, volume])
