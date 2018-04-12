@@ -50,7 +50,7 @@ def log():
         log_text += str(line['text'])
         log_text += '\n'
     log_form = LogForm()
-    log_form.data = log_text
+    log_form.log.data = log_text
     return render_template('log.html', title='Log', form=log_form)
 
 
