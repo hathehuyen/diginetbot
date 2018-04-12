@@ -63,7 +63,7 @@ def stop():
     if username in oms:
         oms[username].signal = False
         del oms[username]
-    return redirect(request.host + "/settings")
+    return redirect(request.host + "/settings?user=" + username)
 
 
 @app.route("/settings", methods=['GET', 'POST'])
