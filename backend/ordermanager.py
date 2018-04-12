@@ -3,11 +3,21 @@ import ccxt
 import time
 import threading
 from common.model import OrderBook
-from common.db import SessionObj
+from common.db import SessionObj, LogObj
 
 
 class diginet(ccxt.acx):
+    """
+    Diginet exchange implement
+    """
     def get_order(self, id, symbol=None, params={}):
+        """
+        Get order status by id
+        :param id: order id (required)
+        :param symbol:
+        :param params:
+        :return:
+        """
         self.load_markets()
         result = self.privateGetOrder({'id': id})
         order = self.parse_order(result)
@@ -17,6 +27,12 @@ class diginet(ccxt.acx):
         return order
 
     def cancel_all_order(self, symbol=None, params={}):
+        """
+        Cancel all active order
+        :param symbol:
+        :param params:
+        :return:
+        """
         self.load_markets()
         result = self.privatePostOrdersClear()
         # order = self.parse_order(result)
@@ -27,6 +43,9 @@ class diginet(ccxt.acx):
 
 
 class OrderManager(object):
+    """
+    Order manager object maintain order book on diginet exchange by copying from bitstamp exchange order book
+    """
     def __init__(self, bitstamp_orderbook: OrderBook, diginet_orderbook: OrderBook, session: SessionObj):
         self.signal = True
         self.logger = logging.getLogger(__name__)
@@ -41,8 +60,14 @@ class OrderManager(object):
         self.diginet_exchanger = diginet({'apiKey': self.settings['diginet']['key'],
                                            'secret': self.settings['diginet']['secret'],
                                            'urls': {'extension': '.json', 'api': 'https://trade.diginet.io'}})
+        self.log_obj = LogObj()
+        self.log_obj.session_id = self.session_obj
 
     def fetch_balance(self):
+        """
+        Updae balance
+        :return:
+        """
         self.diginet_exchanger.balance = self.diginet_exchanger.fetch_balance()
         self.bitstamp_exchanger.balance = self.bitstamp_exchanger.fetch_balance()
         # print(self.diginet_exchanger.balance['VND']['free'])
@@ -61,6 +86,12 @@ class OrderManager(object):
         return bitstamp_asks, bitstamp_bids
 
     def generate_diginet_orders(self, bitstamp_asks, bitstamp_bids):
+        """
+        Generate orders to place on diginet exchange from bitstamp order book
+        :param bitstamp_asks: bitstamp's order book asks
+        :param bitstamp_bids: bitstamp's order book bids
+        :return: Orders to place on diginet exchange [[price, volume]]
+        """
         bid_orders = []
         ask_orders = []
         diginet_vnd_free = float(self.diginet_exchanger.balance['VND']['free']) * \
@@ -129,6 +160,12 @@ class OrderManager(object):
         self.logger.info(str(status))
 
     def place_diginet_orders(self, ask_orders, bid_orders):
+        """
+        Place orders on diginet exchange
+        :param ask_orders: ask orders [[price, volume]]
+        :param bid_orders: bid orders [[price, volume]]
+        :return: List of orders placed
+        """
         orders = []
         for ask_order in ask_orders:
             self.logger.info('Buy ' + str(ask_order[1]) + '@' + str(ask_order[1]))
@@ -141,6 +178,10 @@ class OrderManager(object):
         return orders
 
     def run_loop(self):
+        """
+        The main loop
+        :return:
+        """
         self.logger.info('Cancel all diginet orders')
         self.diginet_exchanger.cancel_all_order()
         while self.signal:
@@ -189,6 +230,10 @@ class OrderManager(object):
                 self.start()
 
     def run_thread(self):
+        """
+        Run main loop as threading
+        :return:
+        """
         thread = threading.Thread(target=lambda: self.run_loop())
         thread.daemon = True
         thread.start()
