@@ -44,6 +44,18 @@ def log():
     return render_template('log.html', title='Log', form=log_form)
 
 
+@app.route("/stop", methods=['GET'])
+def stop():
+    if 'user' not in request.values:
+        return redirect(request.host + "/settings")
+    global oms
+    username = request.values['user']
+    if username in oms:
+        oms[username].signal = False
+        del oms[username]
+    return redirect(request.host + "/settings")
+
+
 @app.route("/settings", methods=['GET', 'POST'])
 def settings():
     if 'user' not in request.values:
