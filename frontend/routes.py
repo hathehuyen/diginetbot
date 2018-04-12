@@ -37,11 +37,22 @@ def orderbook():
 def log():
     if 'user' not in request.values:
         return Response('Access denied!', content_type='text/plain')
-    log_form = LogForm()
-    with open('diginetbot.log') as f:
-        logs = f.read()
-    log_form.log.data = logs
-    return render_template('log.html', title='Log', form=log_form)
+    username = request.values['user']
+    username = request.values['user']
+    user_obj = db.UserObj()
+    user_obj.find_one(username)
+    session_obj = db.SessionObj()
+    session_obj.find_one(user_id=user_obj.id)
+    log_obj = db.LogObj()
+    log_obj.session_id = session_obj.id
+    logs = log_obj.get_logs()
+    log_text = ''
+    for log in logs:
+        log_text += str(log['text'])
+        log_text += '\n'
+    log_form = LogForm
+    log_form.data = log_text
+    return render_template('log.html', title='Log', logform=log_form)
 
 
 @app.route("/stop", methods=['GET'])
@@ -140,7 +151,7 @@ def settings():
     bot_status = 'Stopped'
     if username in oms:
         if oms[username].signal:
-            bot_status = 'Running'
+            bot_status = 'Running <a href=stop?user=' + username + '> stop <a>'
     return render_template('settings.html', title='Settings', form=setting_form, bot_status=bot_status)
 
 
