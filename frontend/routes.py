@@ -47,10 +47,10 @@ def log():
     log_obj.session_id = session_obj.id
     logs = log_obj.get_logs()
     log_text = ''
-    for log in logs:
-        log_text += str(log['text'])
+    for line in logs:
+        log_text += str(line['text'])
         log_text += '\n'
-    log_form = LogForm
+    log_form = LogForm()
     log_form.data = log_text
     return render_template('log.html', title='Log', form=log_form)
 
