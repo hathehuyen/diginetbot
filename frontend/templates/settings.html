@@ -6,7 +6,8 @@
         {{ form.hidden_tag() }}
         <h2>Bot status is: {{ bot_status }}</h2>
         {% if bot_status == "Running" %}
-        <p><a href="stop?user={{ username }}">Edit your profile</a></p>
+        <p><a href="stop?user={{ username }}">Stop</a></p>
+        <p><a href="log?user={{ username }}">View log</a></p>
         {% endif %}
         <p>
             {{ form.bot_interval.label }}
