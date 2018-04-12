@@ -93,10 +93,11 @@ class LogObj(object):
     """
     Object to save and get logs from database
     """
-    def __init__(self):
+    def __init__(self, level: int=6):
         self.id = None
         self.user_id = None
         self.session_id = None
+        self.level = level
         self.text = None
 
     def save(self):
@@ -107,11 +108,11 @@ class LogObj(object):
         # update if exist
         if self.id:
             logs_db.update_one({'_id': self.id}, {"$set": {'user_id': self.user_id, 'session_id': self.session_id,
-                                                           'text': self.text}})
+                                                           'level': self.level, 'text': self.text}})
         # insert if not exist
         else:
             self.id = logs_db.insert_one({'user_id': self.user_id, 'session_id': self.session_id,
-                                          'text': self.text}).inserted_id
+                                          'level': self.level, 'text': self.text}).inserted_id
         return self.id
 
     def get_logs(self):

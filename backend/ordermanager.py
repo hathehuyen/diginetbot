@@ -241,6 +241,10 @@ class OrderManager(object):
                     self.save_log_obj('No active orders on diginet')
             except Exception as ex:
                 self.logger.error(str(ex))
+                self.save_log_obj(str(ex))
+        self.logger.info('Cancel all diginet orders')
+        self.save_log_obj('Cancel all diginet orders')
+        self.diginet_exchanger.cancel_all_order()
 
     class OMThread(threading.Thread):
         def __init__(self, threadNum, asset, window):
