@@ -61,13 +61,14 @@ class OrderManager(object):
                                            'secret': self.settings['diginet']['secret'],
                                            'urls': {'extension': '.json', 'api': 'https://trade.diginet.io'}})
 
-    def save_log_obj(self, text: str=''):
+    def save_log_obj(self, text: str='', level: int=6):
         """
         Save log to database
         :param text: text to log
+        :param level: log level
         :return: log object's id
         """
-        log_obj = LogObj()
+        log_obj = LogObj(level=level)
         log_obj.user_id = self.session_obj.user_id
         log_obj.session_id = self.session_obj.id
         log_obj.text = text
@@ -212,6 +213,7 @@ class OrderManager(object):
                 # self.test_diginet_orders()
             except Exception as ex:
                 self.logger.error(str(ex))
+                self.save_log_obj(str(ex), 3)
             time.sleep(int(self.settings['bot']['interval']))
             try:
                 if orders:
@@ -241,7 +243,7 @@ class OrderManager(object):
                     self.save_log_obj('No active orders on diginet')
             except Exception as ex:
                 self.logger.error(str(ex))
-                self.save_log_obj(str(ex))
+                self.save_log_obj(str(ex), 3)
         self.logger.info('Cancel all diginet orders')
         self.save_log_obj('Cancel all diginet orders')
         self.diginet_exchanger.cancel_all_order()
