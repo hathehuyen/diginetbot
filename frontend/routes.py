@@ -156,5 +156,17 @@ def settings():
                            username=username)
 
 
+@app.after_request
+def add_header(r):
+    """
+    Add headers no cache to browser
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
+
+
 if __name__ == "__main__":
     app.run()
