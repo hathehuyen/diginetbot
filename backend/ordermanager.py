@@ -60,14 +60,25 @@ class OrderManager(object):
         self.diginet_exchanger = diginet({'apiKey': self.settings['diginet']['key'],
                                            'secret': self.settings['diginet']['secret'],
                                            'urls': {'extension': '.json', 'api': 'https://trade.diginet.io'}})
-        self.log_obj = LogObj()
-        self.log_obj.session_id = self.session_obj
+
+    def save_log_obj(self, text: str=''):
+        """
+        Save log to database
+        :param text: text to log
+        :return: log object's id
+        """
+        log_obj = LogObj()
+        log_obj.user_id = self.session_obj.user_id
+        log_obj.session_id = self.session_obj.id
+        log_obj.text = text
+        return log_obj.save()
 
     def fetch_balance(self):
         """
         Updae balance
         :return:
         """
+        self.save_log_obj('Update balance')
         self.diginet_exchanger.balance = self.diginet_exchanger.fetch_balance()
         self.bitstamp_exchanger.balance = self.bitstamp_exchanger.fetch_balance()
         # print(self.diginet_exchanger.balance['VND']['free'])
@@ -167,12 +178,16 @@ class OrderManager(object):
         :return: List of orders placed
         """
         orders = []
+        if ask_orders or bid_orders:
+            self.save_log_obj('Place diginet orders')
         for ask_order in ask_orders:
-            self.logger.info('Buy ' + str(ask_order[1]) + '@' + str(ask_order[1]))
+            self.logger.info('Buy ' + str(ask_order[1]) + '@' + str(ask_order[0]))
+            self.save_log_obj('Buy ' + str(ask_order[1]) + '@' + str(ask_order[0]))
             order = self.diginet_exchanger.create_order('BTC/VND', 'limit', 'buy', ask_order[1], ask_order[0])
             orders.append(order)
         for bid_order in bid_orders:
-            self.logger.info('Buy ' + str(bid_order[1]) + '@' + str(bid_order[1]))
+            self.logger.info('Buy ' + str(bid_order[1]) + '@' + str(bid_order[0]))
+            self.save_log_obj('Buy ' + str(bid_order[1]) + '@' + str(bid_order[0]))
             order = self.diginet_exchanger.create_order('BTC/VND', 'limit', 'sell', bid_order[1], bid_order[0])
             orders.append(order)
         return orders
@@ -183,6 +198,7 @@ class OrderManager(object):
         :return:
         """
         self.logger.info('Cancel all diginet orders')
+        self.save_log_obj('Cancel all diginet orders')
         self.diginet_exchanger.cancel_all_order()
         while self.signal:
             orders = []
@@ -200,20 +216,29 @@ class OrderManager(object):
             try:
                 if orders:
                     self.logger.info('Check orders status')
+                    self.save_log_obj('Check orders status')
                     for order in orders:
                         order = self.diginet_exchanger.get_order(order['id'])
                         self.logger.info(str(order))
+                        self.save_log_obj(str(order))
                         if order['status'] == 'open':
                             self.logger.info('Close order id ' + order['id'])
+                            self.save_log_obj('Close order id ' + order['id'])
                             self.diginet_exchanger.cancel_order(order['id'])
                         if order['status'] == 'closed':
                             self.logger.info('Order ' + order['id'] + ' filled, place market order on bitstamp')
+                            self.save_log_obj('Order ' + order['id'] + ' filled, place market order on bitstamp')
                             if order['side'] == 'sell':
+                                self.logger.info('Sell ' + str(order['filled']) + 'BTC on bitstamp')
+                                self.save_log_obj('Sell ' + str(order['filled']) + 'BTC on bitstamp')
                                 self.bitstamp_exchanger.create_market_buy_order('BTC/USD', order['filled'])
                             if order['side'] == 'buy':
+                                self.logger.info('Buy ' + str(order['filled']) + 'BTC on bitstamp')
+                                self.save_log_obj('Buy ' + str(order['filled']) + 'BTC on bitstamp')
                                 self.bitstamp_exchanger.create_market_sell_order('BTC/USD', order['filled'])
                 else:
-                    self.logger.info('No active orders')
+                    self.logger.info('No active orders on diginet')
+                    self.save_log_obj('No active orders on diginet')
             except Exception as ex:
                 self.logger.error(str(ex))
 
@@ -237,3 +262,4 @@ class OrderManager(object):
         thread = threading.Thread(target=lambda: self.run_loop())
         thread.daemon = True
         thread.start()
+        self.save_log_obj('Bot started for user ' + str(self.session_obj.user_id))
