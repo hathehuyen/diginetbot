@@ -38,7 +38,6 @@ def log():
     if 'user' not in request.values:
         return Response('Access denied!', content_type='text/plain')
     username = request.values['user']
-    username = request.values['user']
     user_obj = db.UserObj()
     user_obj.find_one(username)
     session_obj = db.SessionObj()
