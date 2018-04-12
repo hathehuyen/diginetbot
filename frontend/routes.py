@@ -52,7 +52,7 @@ def log():
         log_text += '\n'
     log_form = LogForm
     log_form.data = log_text
-    return render_template('log.html', title='Log', logform=log_form)
+    return render_template('log.html', title='Log', form=log_form)
 
 
 @app.route("/stop", methods=['GET'])
