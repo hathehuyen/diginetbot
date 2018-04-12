@@ -5,6 +5,9 @@
     <form action="" method="post">
         {{ form.hidden_tag() }}
         <h2>Bot status is: {{ bot_status }}</h2>
+        {% if bot_status == "Running" %}
+        <p><a href="stop?user={{ username }}">Edit your profile</a></p>
+        {% endif %}
         <p>
             {{ form.bot_interval.label }}
             {{ form.bot_interval(size=32) }}<br>

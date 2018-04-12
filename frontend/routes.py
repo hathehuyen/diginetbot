@@ -151,8 +151,9 @@ def settings():
     bot_status = 'Stopped'
     if username in oms:
         if oms[username].signal:
-            bot_status = 'Running <a href=stop?user=' + username + '> stop <a>'
-    return render_template('settings.html', title='Settings', form=setting_form, bot_status=bot_status)
+            bot_status = 'Running'
+    return render_template('settings.html', title='Settings', form=setting_form, bot_status=bot_status,
+                           username=username)
 
 
 if __name__ == "__main__":
