@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% if title %}
+        <title>{{ title }} - Redirecting</title>
+        {% else %}
+        <title>Redirecting</title>
+        {% endif %}
+        <meta http-equiv="refresh" content="1;url={{ redirect_url }}" />
+    </head>
+    <body>
+        <h2>Bot stopped</h2>
+        <h3>Redirecting, click <a href="{{ redirect_url }}">here</a> if not automatically redirected </h3>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>
