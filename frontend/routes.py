@@ -14,7 +14,8 @@ bitstamp_orderbook_btcusd = OrderBook(exchange='bitstamp', pair='BTC/USD')
 bitstamp_orderbook_btcusd.start()
 diginet_orderbook_btcvnd = OrderBook(exchange='diginet', pair='BTC/VND')
 diginet_orderbook_btcvnd.start()
-om = None
+oms = {}
+
 
 @app.route("/", methods=['GET'])
 def index():
@@ -32,7 +33,6 @@ def orderbook():
     return Response('No exchange!', content_type='text/plain')
 
 
-
 @app.route("/log", methods=['GET'])
 def log():
     if 'user' not in request.values:
@@ -48,7 +48,7 @@ def log():
 def settings():
     if 'user' not in request.values:
         return Response('Access denied!', content_type='text/plain')
-    global om
+    global oms
     username = request.values['user']
     user_obj = db.UserObj()
     user_obj.find_one(username)
@@ -94,17 +94,17 @@ def settings():
 
         session_obj.settings = bot_params
         session_obj.save()
-        if not om:
-            om = ordermanager.OrderManager(bitstamp_orderbook=bitstamp_orderbook_btcusd,
-                                           diginet_orderbook=diginet_orderbook_btcvnd,
-                                           session=session_obj)
+        if username not in oms:
+            oms[username] = ordermanager.OrderManager(bitstamp_orderbook=bitstamp_orderbook_btcusd,
+                                                      diginet_orderbook=diginet_orderbook_btcvnd,
+                                                      session=session_obj)
         else:
-            om.signal = False
+            oms[username].signal = False
             time.sleep(2)
-            om = ordermanager.OrderManager(bitstamp_orderbook=bitstamp_orderbook_btcusd,
-                                           diginet_orderbook=diginet_orderbook_btcvnd,
-                                           session=session_obj)
-        om.run_thread()
+            oms[username] = ordermanager.OrderManager(bitstamp_orderbook=bitstamp_orderbook_btcusd,
+                                                      diginet_orderbook=diginet_orderbook_btcvnd,
+                                                      session=session_obj)
+        oms[username].run_thread()
         return redirect(request.full_path)
     elif request.method == 'GET':
         setting_form.bitstamp_key.data = bot_params['bitstamp']['key']
@@ -125,7 +125,11 @@ def settings():
         setting_form.diginet_asset_max_pct.data = bot_params['diginet']['asset_max_pct']
         setting_form.diginet_min_order.data = bot_params['diginet']['min_order']
         setting_form.bot_interval.data = bot_params['bot']['interval']
-    return render_template('settings.html', title='Settings', form=setting_form)
+    bot_status = 'Stopped'
+    if username in oms:
+        if oms[username].signal:
+            bot_status = 'Running'
+    return render_template('settings.html', title='Settings', form=setting_form, bot_status=bot_status)
 
 
 if __name__ == "__main__":
