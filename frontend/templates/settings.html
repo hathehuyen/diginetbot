@@ -4,7 +4,8 @@
     <h1>Settings</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
-        <h2>Bot status is: {{ bot_status }}</h2>
+        <h2>Bot status is: {% if bot_status == "Running" %}<font color="green">{% endif %}{{ bot_status }}
+        {% if bot_status == "Running" %}</font>{% endif %}</h2>
         {% if bot_status == "Running" %}
         <p><a href="stop?user={{ username }}">Stop</a></p>
         <p><a href="log?user={{ username }}">View log</a></p>
