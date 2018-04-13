@@ -48,7 +48,7 @@ def log():
     log_lines = []
     log_text = ''
     for line in logs:
-        log_lines.insert(line)
+        log_lines.insert(0, line)
     for line in log_lines:
         log_text += str(line['text'])
         log_text += '\n'
