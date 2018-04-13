@@ -21,7 +21,7 @@ oms = {}
 def index():
     if 'user' not in request.values:
         return render_template('index.html', title='Home')
-    username = request.values['username']
+    username = request.values['user']
     return render_template('index.html', title='Home', username=username)
 
 
