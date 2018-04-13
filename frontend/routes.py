@@ -47,7 +47,7 @@ def log():
     session_obj.find_one(user_id=user_obj.id)
     log_obj = db.LogObj()
     log_obj.session_id = session_obj.id
-    logs = log_obj.get_last_logs()
+    logs = log_obj.get_last_logs(limit=100)
     log_lines = []
     log_text = ''
     for line in logs:
