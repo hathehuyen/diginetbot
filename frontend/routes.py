@@ -19,7 +19,10 @@ oms = {}
 
 @app.route("/", methods=['GET'])
 def index():
-    return render_template('index.html', title='Home')
+    if 'user' not in request.values:
+        return render_template('index.html', title='Home')
+    username = request.values['username']
+    return render_template('index.html', title='Home', username=username)
 
 
 @app.route("/orderbook", methods=['GET'])
@@ -56,7 +59,7 @@ def log():
         log_text += '\n'
     log_form = LogForm()
     log_form.log.data = log_text
-    return render_template('log.html', title='Log', auto_refresh=True, form=log_form)
+    return render_template('log.html', title='Log', auto_refresh=True, form=log_form, username=username)
 
 
 @app.route("/stop", methods=['GET'])
