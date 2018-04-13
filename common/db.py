@@ -121,3 +121,11 @@ class LogObj(object):
         :return: Database iterable cursor
         """
         return logs_db.find({'session_id': self.session_id})
+
+    def get_last_logs(self, limit: int=10):
+        """
+        Get all log from database for a session
+        :return: Database iterable cursor
+        """
+        count = logs_db.count({'session_id': self.session_id})
+        return logs_db.find({'session_id': self.session_id}, skip=count-limit)

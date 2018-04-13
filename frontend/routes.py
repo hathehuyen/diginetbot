@@ -47,13 +47,11 @@ def log():
     session_obj.find_one(user_id=user_obj.id)
     log_obj = db.LogObj()
     log_obj.session_id = session_obj.id
-    logs = log_obj.get_logs()
+    logs = log_obj.get_last_logs()
     log_lines = []
     log_text = ''
     for line in logs:
         log_lines.insert(0, line)
-        if len(log_lines) >= 200:
-            break
     for line in log_lines:
         log_text += str(line['text'])
         log_text += '\n'
