@@ -45,8 +45,11 @@ def log():
     log_obj = db.LogObj()
     log_obj.session_id = session_obj.id
     logs = log_obj.get_logs()
+    log_lines = []
     log_text = ''
     for line in logs:
+        log_lines.insert(line)
+    for line in log_lines:
         log_text += str(line['text'])
         log_text += '\n'
     log_form = LogForm()
