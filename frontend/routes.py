@@ -49,6 +49,8 @@ def log():
     log_text = ''
     for line in logs:
         log_lines.insert(0, line)
+        if len(log_lines) >= 200:
+            break
     for line in log_lines:
         log_text += str(line['text'])
         log_text += '\n'
