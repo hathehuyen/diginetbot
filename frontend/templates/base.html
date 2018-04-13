@@ -14,7 +14,9 @@
         {% endif %}
     </head>
     <body>
-        <div><a href="/">Home</a> | <a href="/settings{% if username %}?user={{ username }}">Settings</a></div>
+        <div><a href="/settings{% if username %}?user={{ username }}{% endif %}">Settings</a>
+         | <a href="/log{% if username %}?user={{ username }}{% endif %}">Log</a>
+        </div>
         <hr>
         {% block content %}{% endblock %}
     </body>
