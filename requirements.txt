@@ -3,3 +3,4 @@ ccxt
 flask
 Flask-WTF
 pymongo
+pycrypto
